@@ -230,7 +230,7 @@ public final class RitualManager {
             InventoryHolder h = pl.getOpenInventory().getTopInventory().getHolder();
             if (h instanceof AltarMenu menu && menu.altar() == a) {
                 if (a.state == Altar.State.IDLE) menu.render();
-                else Bukkit.getScheduler().runTask(plugin, pl::closeInventory);
+                else Bukkit.getScheduler().runTask(plugin, () -> pl.closeInventory());
             }
         }
     }

@@ -35,7 +35,7 @@ public abstract class Menu implements InventoryHolder {
 
     /** Cerrar un inventario dentro de su propio evento da problemas; se hace en el siguiente tick. */
     protected void closeLater(Player p) {
-        Bukkit.getScheduler().runTask(plugin, p::closeInventory);
+        Bukkit.getScheduler().runTask(plugin, () -> p.closeInventory());
     }
 
     protected static ItemStack item(Material m, String name, List<String> lore, boolean glow) {

@@ -1,0 +1,50 @@
+rituals:
+  guardian_caido:
+    name: "&4&lGuardián Caído"
+    icon: ZOMBIE_HEAD     # opcional; por defecto el huevo del mob
+    countdown: 10          # segundos antes de invocar al jefe
+    cooldown: 300          # segundos que el altar queda inactivo tras morir el jefe
+    offerings:             # MATERIAL: cantidad
+      ROTTEN_FLESH: 32
+      BONE: 16
+      GOLD_INGOT: 4
+    boss:
+      type: ZOMBIE
+      health: 200
+      damage: 10
+      bar-color: RED     # PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE
+      gear:
+        helmet: NETHERITE_HELMET
+        chestplate: NETHERITE_CHESTPLATE
+        leggings: NETHERITE_LEGGINGS
+        boots: NETHERITE_BOOTS
+        main-hand: NETHERITE_SWORD
+    rewards:
+      xp: 500
+      vanilla-drops: false
+      drops:               # MATERIAL: cantidad
+        DIAMOND: 8
+        NETHERITE_SCRAP: 2
+      commands:            # se ejecutan como consola. %player% = quien lo mató
+        - "say %player% venció al Guardián Caído"
+
+  senor_esqueleto:
+    name: "&f&lSeñor Esqueleto"
+    countdown: 8
+    cooldown: 180
+    offerings:
+      BONE_BLOCK: 8
+      ARROW: 64
+    boss:
+      type: WITHER_SKELETON
+      health: 150
+      damage: 8
+      bar-color: WHITE
+      gear:
+        main-hand: BOW
+    rewards:
+      xp: 300
+      vanilla-drops: true
+      drops:
+        EMERALD: 12
+      commands: []

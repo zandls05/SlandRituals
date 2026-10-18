@@ -1,16 +1,17 @@
-name: DueloWand
-version: 1.2
-main: dev.duelo.DueloPlugin
-api-version: '26.3'
-description: Varitas de duelo 1v1 (cupula de cristal y arena con teletransporte).
+name: SlandRituals
+main: dev.slandrituals.SlandRitualsPlugin
+version: ${project.version}
+api-version: '1.21'
+description: Altares de ofrendas para invocar jefes.
 commands:
-  duelo:
-    description: Gestiona las varitas de duelo
-    usage: /duelo give <dome|arena> [jugador] | /duelo setarena <1|2>
+  ritual:
+    description: Administra rituales y altares
+    usage: /ritual <menu|create|remove|list|reload>
+    aliases: [rituales]
 permissions:
-  duelo.admin:
-    description: Permite entregar varitas y configurar la arena
+  slandrituals.admin:
+    description: Crear, quitar y recargar altares
     default: op
-  duelo.bypass:
-    description: Permite usar comandos durante un duelo de arena
-    default: op
+  slandrituals.use:
+    description: Hacer ofrendas en los altares
+    default: true

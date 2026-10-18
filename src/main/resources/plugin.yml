@@ -1,0 +1,17 @@
+name: SlandRituals
+main: dev.slandrituals.SlandRitualsPlugin
+version: ${project.version}
+api-version: '1.21'
+description: Altares de ofrendas para invocar jefes.
+commands:
+  ritual:
+    description: Administra rituales y altares
+    usage: /ritual <menu|create|remove|list|reload>
+    aliases: [rituales]
+permissions:
+  slandrituals.admin:
+    description: Crear, quitar y recargar altares
+    default: op
+  slandrituals.use:
+    description: Hacer ofrendas en los altares
+    default: true

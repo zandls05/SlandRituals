@@ -754,11 +754,3 @@ public final class RitualManager {
         return seconds + "s";
     }
 }
-
-    /** Comprueba permiso, hora y jugadores cercanos ANTES de consumir nada. Devuelve el mensaje de error o null. */
-    private String checkConditions(Player p, Altar a, Ritual r) {
-        Ritual.Conditions c = r.conditions();
-        if (!c.permission().isEmpty() && !p.hasPermission(c.permission())) {
-            return plugin.msg("condition-permission");
-        }
-        Location

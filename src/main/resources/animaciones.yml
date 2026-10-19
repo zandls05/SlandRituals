@@ -1,0 +1,107 @@
+# Animaciones y cinemática POR DEFECTO. Cada ritual puede sobrescribir cualquier valor
+# en su sección "cinematic:" de rituals.yml (o desde el editor: /rituales editar <id>).
+#
+# Partículas: cualquier nombre de Particle de Paper (END_ROD, FLAME, SOUL_FIRE_FLAME, ENCHANT,
+# PORTAL, REVERSE_PORTAL, WITCH, ELECTRIC_SPARK, DUST...). DUST usa color (#RRGGBB) y size.
+# Sonidos: clave de Minecraft con puntos, por ejemplo block.beacon.activate.
+# Textos: admiten colores con & y las variables {ritual} {boss} {player} {time}.
+#
+# Cada fotograma ocurre cada 2 ticks. frequency: 3 = dibuja 1 de cada 3 fotogramas.
+
+animations:
+  arcane_spiral:
+    particle: SOUL_FIRE_FLAME
+    count: 3
+    radius: 1.4
+    speed: 1.0
+    height: 2.2
+    frequency: 1
+  magic_circle:
+    particle: DUST
+    color: "#8A2BE2"
+    size: 1.2
+    count: 3
+    radius: 2.2
+    speed: 1.0
+    frequency: 2
+  energy_columns:
+    particle: END_ROD
+    count: 3
+    radius: 2.6
+    speed: 1.0
+    height: 3.5
+    frequency: 2
+  energy_pulse:
+    particle: ENCHANT
+    radius: 5.0
+    speed: 1.0
+    frequency: 1
+  magic_runes:
+    particle: DUST
+    color: "#C77DFF"
+    size: 0.9
+    radius: 3.0
+    speed: 1.0
+    frequency: 3
+  summoning_vortex:
+    particle: PORTAL
+    count: 3
+    radius: 3.5
+    speed: 1.0
+    height: 3.0
+    frequency: 1
+  arcane_overload:
+    particle: ELECTRIC_SPARK
+    count: 3
+    radius: 2.0
+    frequency: 1
+  final_explosion:
+    particle: END_ROD
+    count: 3
+    radius: 6.0
+    speed: 1.0
+
+phases:
+  activation:
+    enabled: true
+    duration: 2
+    sound: "block.beacon.activate"
+    title: ""
+    subtitle: ""
+    message: "&d{player} &7ha iniciado el ritual &d{ritual}&7..."
+    animations:
+      magic_circle: {}
+  charge:
+    enabled: true
+    duration: 10
+    sound: "block.respawn_anchor.charge"
+    tick-sound: "block.beacon.ambient"
+    countdown-title: true
+    title: "{ritual}"
+    subtitle: "&7{time}"
+    message: ""
+    animations:
+      magic_circle: {}
+      arcane_spiral: {}
+      magic_runes: {}
+      arcane_overload: {}
+  portal:
+    enabled: true
+    duration: 3
+    sound: "block.end_portal.spawn"
+    title: "&5El portal se abre"
+    subtitle: ""
+    message: ""
+    animations:
+      summoning_vortex: {}
+      energy_columns: {}
+  spawn:
+    enabled: true
+    duration: 2
+    sound: "entity.wither.spawn"
+    title: "{boss}"
+    subtitle: "&7ha sido invocado"
+    message: ""
+    animations:
+      final_explosion: {}
+      energy_pulse: {}

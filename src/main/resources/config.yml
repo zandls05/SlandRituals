@@ -1,56 +1,28 @@
-# Mensajes. Colores con &. Placeholders entre llaves.
-messages:
-  prefix: "&8[&5Rituales&8] &7"
-  no-permission: "&cNo tienes permiso para eso."
-  only-players: "&cSolo jugadores pueden usar este comando."
-  usage: "&7Uso: &f/ritual <menu|create <ritual>|remove|list|reload>"
-  not-looking: "&cMira un bloque (a menos de 6 bloques)."
-  unknown-ritual: "&cEl ritual '{ritual}' no existe."
-  altar-created: "&aAltar creado para el ritual &f{ritual}&a."
-  altar-exists: "&cEse bloque ya es un altar."
-  altar-removed: "&aAltar eliminado."
-  not-altar: "&cEse bloque no es un altar."
-  altar-protected: "&cEste bloque es un altar. Usa &f/ritual remove&c."
-  reload: "&aConfiguración y rituales recargados."
-  no-use-permission: "&cNo puedes usar este altar."
-  busy: "&cEl ritual ya está en marcha."
-  cooldown: "&cEl altar se está recuperando: &f{time}s"
-  wrong-item: "&cEl altar no acepta ese objeto."
-  item-complete: "&eYa entregaste suficiente &f{item}&e."
-  offered: "&aOfrendaste &f{item} &7({have}/{need})"
-  progress-header: "&5Ofrendas para &d{ritual}&5:"
-  progress-line: " &8- &f{item}&7: {have}/{need}"
-  ritual-start: "&d{player} &7ha iniciado el ritual &d{ritual}&7..."
-  boss-spawned: "&c¡{boss} &cha sido invocado!"
-  boss-defeated: "&a{player} &7ha derrotado a {boss}&7."
-  ritual-failed: "&cEl jefe desapareció. Las ofrendas se perdieron."
-  no-item: "&cNo tienes &f{item}&c en el inventario."
-  # --- menú del altar
-  menu-altar-title: "&5Altar: &d{ritual}"
-  menu-offer-name-done: "&a✔ {item}"
-  menu-offer-name: "&e{item}"
-  menu-offer-progress: "&7Entregado: &f{have}&7/&f{need}"
-  menu-offer-click: "&aClic izquierdo: &7entregar 1"
-  menu-offer-shift: "&aShift + clic: &7entregar todo lo necesario"
-  menu-offer-done: "&a¡Completo!"
-  menu-info-name: "{ritual}"
-  menu-info-progress: "&7Progreso: &f{percent}%"
-  menu-info-health: "&7Vida del jefe: &c{health}"
-  menu-info-countdown: "&7Cuenta atrás: &f{time}s"
-  menu-info-hint: "&8Completa todas las ofrendas para invocar al jefe."
-  # --- menú de administración
-  menu-admin-title: "&5Rituales (admin)"
-  menu-admin-item-stats: "&7Vida: &c{health} &7| Daño: &6{damage}"
-  menu-admin-item-altars: "&7Altares: &f{count}"
-  menu-admin-item-offers: "&7Ofrendas:"
-  menu-admin-item-offer-line: " &8- &f{item} &7x{amount}"
-  menu-admin-item-click: "&aClic: &7crear altar en el bloque que miras"
-  menu-admin-reload: "&eRecargar rituales"
-  menu-admin-remove: "&cQuitar altar"
-  menu-admin-remove-lore: "&7Quita el altar del bloque que miras"
-  menu-admin-close: "&7Cerrar"
+# SlandRituals - configuración general.
+# Los textos están en messages.yml, las animaciones por defecto en animaciones.yml
+# y los rituales en rituals.yml (también se editan desde /rituales).
+
 settings:
-  # true = clic en el altar abre el menú. false = entrega directa con el objeto en la mano.
+  # true = clic derecho en el altar abre el menú. false = entrega directa con el objeto en la mano.
   use-menu: true
-  # Radio (bloques) en el que se ve la cuenta atrás y la bossbar
+  # Radio (bloques) por defecto en el que se ve y se oye un ritual. Cada ritual puede definir el suyo.
   broadcast-radius: 60
+  # Si el ritual se cancela (jefe desaparecido, altar quitado, apagado del servidor),
+  # las ofrendas caen al suelo junto al altar.
+  refund-on-abort: true
+  # Segundos que dura el jefe de las pruebas (/rituales probar) antes de eliminarse.
+  test-boss-seconds: 10
+
+integrations:
+  # Invocar jefes de MythicMobs (si está instalado). Si falla, se usa el jefe vanilla del ritual.
+  mythicmobs: true
+  # Permite usar %placeholders% de PlaceholderAPI en títulos, subtítulos y mensajes de las fases.
+  placeholderapi: true
+
+performance:
+  # Máximo de partículas por fotograma (cada 2 ticks) y por ritual.
+  max-particles-per-tick: 150
+  # No dibujar animaciones si no hay jugadores que puedan verlas.
+  skip-when-no-players: true
+  # Aura suave de partículas en altares inactivos cuando hay jugadores a menos de 20 bloques.
+  ambient-particles: true

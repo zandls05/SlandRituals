@@ -49,21 +49,44 @@ public final class AnimMenu extends Menu {
         ItemStack filler = item(Material.BLACK_STAINED_GLASS_PANE, " ", List.of(), false);
         for (int i = 0; i < 36; i++) inv.setItem(i, filler);
 
+        Ritual r = manager.getRitual(ritualId);
+        Ritual.Phase ph = r == null ? null : r.phases().get(phase);
+
         AnimType[] all = AnimType.values();
         for (int i = 0; i < all.length; i++) {
             AnimType t = all[i];
             int slot = 10 + (i / 4) * 9 + (i % 4) * 2;
             boolean on = enabled(t);
-            List<String> lore = new ArrayList<>();
-            lore.add(SlandRitualsPlugin.color("&7" + t.description));
+            List<String> lore = new ArrayList<>(wrap(SlandRitualsPlugin.color("&7" + t.description)));
             lore.add(" ");
             lore.add(plugin.raw(on ? "menu-anim-on" : "menu-anim-off"));
+            Ritual.AnimSpec spec = null;
+            if (on && ph != null) {
+                for (Ritual.AnimSpec candidate : ph.anims()) {
+                    if (candidate.type() == t) spec = candidate;
+                }
+            }
+            if (spec != null) {
+                lore.add(plugin.raw("menu-anim-set1", "particle", spec.particle().name(), "count", String.valueOf(spec.count())));
+                lore.add(plugin.raw("menu-anim-set2", "radius", Lore.num(spec.radius()), "height", Lore.num(spec.height())));
+                lore.add(plugin.raw("menu-anim-set3", "speed", Lore.num(spec.speed()), "frequency", String.valueOf(spec.frequency())));
+                if (spec.data() != null && spec.color() != null) {
+                    lore.add(plugin.raw("menu-anim-set-color", "color", hex(spec.color()), "size", Lore.num(spec.size())));
+                }
+            } else if (!on) {
+                lore.addAll(wrap(plugin.raw("menu-anim-hint-off")));
+            }
+            lore.add(" ");
             lore.add(plugin.raw("menu-anim-click-toggle"));
             lore.add(plugin.raw("menu-anim-click-edit"));
             inv.setItem(slot, item(t.icon, SlandRitualsPlugin.color((on ? "&a" : "&7") + t.label), lore, on));
             slots.put(slot, t);
         }
-        inv.setItem(SLOT_BACK, item(Material.ARROW, plugin.raw("menu-back"), List.of(), false));
+        inv.setItem(SLOT_BACK, backButton());
+    }
+
+    private static String hex(org.bukkit.Color c) {
+        return String.format("#%02X%02X%02X", c.getRed(), c.getGreen(), c.getBlue());
     }
 
     @Override

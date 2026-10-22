@@ -40,6 +40,7 @@ public final class AltarsMenu extends Menu {
         ItemStack filler = item(Material.BLACK_STAINED_GLASS_PANE, " ", List.of(), false);
         for (int i = 0; i < 54; i++) inv.setItem(i, filler);
 
+        Ritual r = manager.getRitual(ritualId);
         List<Altar> list = manager.altarsOf(ritualId);
         for (int i = 0; i < list.size() && i < 28; i++) {
             Altar a = list.get(i);
@@ -47,7 +48,22 @@ public final class AltarsMenu extends Menu {
             List<String> lore = new ArrayList<>();
             lore.add(plugin.raw("menu-altars-loc", "world", a.world, "x", String.valueOf(a.x),
                     "y", String.valueOf(a.y), "z", String.valueOf(a.z)));
+            if (r != null) lore.add(plugin.raw("menu-altars-ritual", "ritual", r.name()));
             lore.add(plugin.raw("menu-archive-status", "status", manager.statusLabel(a)));
+            if (r != null) {
+                int need = Lore.totalItems(r);
+                int have = 0;
+                for (Map.Entry<Material, Integer> e : r.offerings().entrySet()) {
+                    have += Math.min(e.getValue(), a.delivered.getOrDefault(e.getKey(), 0));
+                }
+                lore.add(plugin.raw("menu-altars-progress", "have", String.valueOf(have), "need", String.valueOf(need),
+                        "percent", String.valueOf(need == 0 ? 0 : have * 100 / need)));
+            }
+            if (a.state == Altar.State.CHARGING || a.state == Altar.State.ACTIVE) {
+                String who = a.starter == null ? null : Bukkit.getOfflinePlayer(a.starter).getName();
+                lore.add(plugin.raw("menu-altars-starter", "player", who == null ? "?" : who));
+                if (a.boss != null && a.boss.isValid()) lore.add(plugin.raw("menu-altars-boss"));
+            }
             lore.add(" ");
             lore.add(plugin.raw("menu-altars-click-tp"));
             lore.add(plugin.raw("menu-altars-click-reset"));
@@ -55,9 +71,11 @@ public final class AltarsMenu extends Menu {
             inv.setItem(slot, item(Material.LODESTONE, plugin.raw("menu-altars-name", "n", String.valueOf(i + 1)), lore, false));
             slots.put(slot, a);
         }
-        inv.setItem(SLOT_CREATE, item(Material.EMERALD, plugin.raw("menu-altars-create"),
-                List.of(plugin.raw("menu-altars-create-lore")), true));
-        inv.setItem(SLOT_BACK, item(Material.ARROW, plugin.raw("menu-back"), List.of(), false));
+        List<String> create = new ArrayList<>(wrap(plugin.raw("menu-altars-create-lore")));
+        create.add(" ");
+        create.add(plugin.raw("menu-altars-count", "count", String.valueOf(list.size())));
+        inv.setItem(SLOT_CREATE, item(Material.EMERALD, plugin.raw("menu-altars-create"), create, true));
+        inv.setItem(SLOT_BACK, backButton());
     }
 
     @Override

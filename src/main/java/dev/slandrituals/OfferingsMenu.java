@@ -44,8 +44,15 @@ public final class OfferingsMenu extends Menu {
             for (Map.Entry<Material, Integer> e : r.offerings().entrySet()) {
                 if (i >= 28) break;
                 int slot = (1 + i / 7) * 9 + 1 + i % 7;
+                int amount = e.getValue();
+                int stack = Math.max(1, e.getKey().getMaxStackSize());
+                int total = Math.max(1, Lore.totalItems(r));
                 List<String> lore = new ArrayList<>();
-                lore.add(plugin.raw("menu-offerings-amount", "amount", String.valueOf(e.getValue())));
+                lore.add(plugin.raw("menu-offerings-amount", "amount", String.valueOf(amount)));
+                lore.add(plugin.raw("menu-offerings-stacks", "stacks", String.valueOf(amount / stack),
+                        "rest", String.valueOf(amount % stack)));
+                lore.add(plugin.raw("menu-offerings-share", "percent", String.valueOf(amount * 100 / total)));
+                lore.add(plugin.raw("menu-offerings-id", "id", e.getKey().name()));
                 lore.add(" ");
                 lore.add(plugin.raw("menu-offerings-click-add"));
                 lore.add(plugin.raw("menu-offerings-click-sub"));
@@ -56,9 +63,13 @@ public final class OfferingsMenu extends Menu {
                 i++;
             }
         }
-        inv.setItem(SLOT_ADD, item(Material.HOPPER, plugin.raw("menu-offerings-add"),
-                List.of(plugin.raw("menu-offerings-add-lore")), true));
-        inv.setItem(SLOT_BACK, item(Material.ARROW, plugin.raw("menu-back"), List.of(), false));
+        List<String> add = new ArrayList<>(wrap(plugin.raw("menu-offerings-add-lore")));
+        if (r != null) {
+            add.add(" ");
+            add.add(plugin.raw("menu-offerings-add-limit", "count", String.valueOf(r.offerings().size())));
+        }
+        inv.setItem(SLOT_ADD, item(Material.HOPPER, plugin.raw("menu-offerings-add"), add, true));
+        inv.setItem(SLOT_BACK, backButton());
     }
 
     @Override

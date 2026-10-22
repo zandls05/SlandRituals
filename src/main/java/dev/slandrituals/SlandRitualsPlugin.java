@@ -6,8 +6,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public final class SlandRitualsPlugin extends JavaPlugin {
@@ -17,6 +17,7 @@ public final class SlandRitualsPlugin extends JavaPlugin {
     private Cfg animations;
     private Hooks hooks;
     private ChatInput chat;
+    /** Claves de messages.yml que faltan y ya se avisaron en la consola (para no repetir el aviso). */
     private final Set<String> missingKeys = new HashSet<>();
 
     @Override
@@ -72,6 +73,11 @@ public final class SlandRitualsPlugin extends JavaPlugin {
     }
 
     /** Mensaje con prefijo. Pares clave/valor para reemplazar {placeholders}. */
+    public String msg(String key, String... pairs) {
+        return prefix() + raw(key, pairs);
+    }
+
+    /** Mensaje sin prefijo. */
     public String raw(String key, String... pairs) {
         String text = messages.str(key, null);
         if (text == null) {

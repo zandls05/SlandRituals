@@ -7,7 +7,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 
 import java.util.List;
 
-/** Pregunta de confirmación (sí / no). */
+/** Pregunta de confirmación (sí / no) con un texto de aviso opcional. */
 public final class ConfirmMenu extends Menu {
 
     private static final int SLOT_YES = 11;
@@ -17,14 +17,20 @@ public final class ConfirmMenu extends Menu {
     private final Runnable onNo;
 
     public ConfirmMenu(SlandRitualsPlugin plugin, String question, Runnable onYes, Runnable onNo) {
+        this(plugin, question, List.of(), onYes, onNo);
+    }
+
+    public ConfirmMenu(SlandRitualsPlugin plugin, String question, List<String> details, Runnable onYes, Runnable onNo) {
         super(plugin);
         this.onYes = onYes;
         this.onNo = onNo;
         this.inv = Bukkit.createInventory(this, 27, plugin.raw("menu-confirm-title"));
         for (int i = 0; i < 27; i++) inv.setItem(i, item(Material.GRAY_STAINED_GLASS_PANE, " ", List.of(), false));
-        inv.setItem(4, item(Material.PAPER, question, List.of(), false));
-        inv.setItem(SLOT_YES, item(Material.LIME_CONCRETE, plugin.raw("menu-confirm-yes"), List.of(), false));
-        inv.setItem(SLOT_NO, item(Material.RED_CONCRETE, plugin.raw("menu-confirm-no"), List.of(), false));
+        inv.setItem(4, item(Material.PAPER, question, details, false));
+        inv.setItem(SLOT_YES, item(Material.LIME_CONCRETE, plugin.raw("menu-confirm-yes"),
+                wrap(plugin.raw("menu-confirm-yes-lore")), false));
+        inv.setItem(SLOT_NO, item(Material.RED_CONCRETE, plugin.raw("menu-confirm-no"),
+                wrap(plugin.raw("menu-confirm-no-lore")), false));
     }
 
     @Override

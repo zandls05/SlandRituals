@@ -19,6 +19,7 @@ public final class AltarMenu extends Menu {
     private final Ritual ritual;
     private final int rows;
     private final Map<Integer, Material> slots = new HashMap<>();
+    private Player viewer;
 
     public AltarMenu(SlandRitualsPlugin plugin, RitualManager manager, Altar altar, Ritual ritual) {
         super(plugin);
@@ -32,6 +33,23 @@ public final class AltarMenu extends Menu {
 
     public Altar altar() {
         return altar;
+    }
+
+    @Override
+    public void open(Player p) {
+        this.viewer = p;
+        render(); // para mostrar cuántos objetos lleva encima este jugador
+        super.open(p);
+    }
+
+    /** Objetos de este tipo que lleva el jugador, o -1 si aún no se sabe quién mira el menú. */
+    private int owned(Material m) {
+        if (viewer == null) return -1;
+        int n = 0;
+        for (ItemStack it : viewer.getInventory().getStorageContents()) {
+            if (it != null && it.getType() == m) n += it.getAmount();
+        }
+        return n;
     }
 
     /** Redibuja todo el contenido con el progreso actual. */
@@ -71,8 +89,13 @@ public final class AltarMenu extends Menu {
             lore.add(plugin.raw("menu-offer-progress", "have", String.valueOf(have), "need", String.valueOf(need)));
             lore.add(" ");
             if (done) {
-                lore.add(plugin.raw("menu-offer-done"));
+                lore.addAll(wrap(plugin.raw("menu-offer-done")));
             } else {
+                lore.add(plugin.raw("menu-offer-missing", "missing", String.valueOf(need - have)));
+                int owned = owned(m);
+                if (owned > 0) lore.add(plugin.raw("menu-offer-inventory", "owned", String.valueOf(owned)));
+                else if (owned == 0) lore.addAll(wrap(plugin.raw("menu-offer-inventory-none")));
+                lore.add(" ");
                 lore.add(plugin.raw("menu-offer-click"));
                 lore.add(plugin.raw("menu-offer-shift"));
             }
@@ -83,12 +106,21 @@ public final class AltarMenu extends Menu {
             slots.put(positions.get(i), m);
         }
 
-        List<String> info = new ArrayList<>();
-        info.add(plugin.raw("menu-info-progress", "percent", String.valueOf(totalNeed == 0 ? 0 : totalHave * 100 / totalNeed)));
-        info.add(plugin.raw("menu-info-health", "health", String.valueOf((int) ritual.boss().health())));
-        info.add(plugin.raw("menu-info-countdown", "time", String.valueOf(ritual.summonSeconds())));
+        List<String> info = new ArrayList<>(ritual.description());
+        if (!info.isEmpty()) info.add(" ");
+        info.add(plugin.raw("menu-info-progress", "percent", String.valueOf(totalNeed == 0 ? 0 : totalHave * 100 / totalNeed),
+                "have", String.valueOf(totalHave), "need", String.valueOf(totalNeed)));
         info.add(" ");
-        info.add(plugin.raw("menu-info-hint"));
+        info.add(plugin.raw("menu-info-boss", "boss", ritual.boss().mythicId().isEmpty() ? ritual.boss().name() : ritual.bossLabel()));
+        if (ritual.boss().mythicId().isEmpty()) {
+            info.add(plugin.raw("menu-info-health", "health", Lore.num(ritual.boss().health())));
+            info.add(plugin.raw("menu-info-damage", "damage", Lore.num(ritual.boss().damage())));
+        }
+        info.add(plugin.raw("menu-info-countdown", "time", String.valueOf(ritual.summonSeconds())));
+        info.add(plugin.raw("menu-info-cooldown", "time", RitualManager.formatTime(ritual.cooldown())));
+        info.add(plugin.raw("menu-info-conditions", "conditions", Lore.conditions(plugin, ritual)));
+        info.add(" ");
+        info.addAll(wrap(plugin.raw("menu-info-hint")));
         inv.setItem((rows - 1) * 9 + 4, item(ritual.icon(), plugin.raw("menu-info-name", "ritual", ritual.name()), info, true));
     }
 

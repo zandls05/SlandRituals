@@ -7,8 +7,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -60,23 +62,104 @@ public final class EditorMenu extends Menu {
 
         Ritual r = manager.getRitual(id);
         if (r != null) {
-            inv.setItem(4, item(r.icon(), r.name(), List.of(
-                    plugin.raw("menu-editor-id", "id", id),
-                    plugin.raw("menu-archive-boss", "boss", r.bossLabel()),
-                    plugin.raw("menu-archive-status", "status", manager.statusLabel(r))), true));
+            List<String> head = new ArrayList<>(r.description());
+            if (!head.isEmpty()) head.add(" ");
+            head.add(plugin.raw("menu-editor-id", "id", id));
+            head.add(plugin.raw("menu-archive-boss", "boss", r.bossLabel()));
+            head.add(plugin.raw("menu-archive-status", "status", manager.statusLabel(r)));
+            head.add(" ");
+            head.addAll(wrap(plugin.raw("menu-editor-hint")));
+            inv.setItem(4, item(r.icon(), r.name(), head, true));
         }
         for (Cat c : Cat.values()) {
-            String k = c.name().toLowerCase();
-            inv.setItem(c.slot, item(c.icon, plugin.raw("cat-" + k), List.of(plugin.raw("cat-" + k + "-lore")), false));
+            String k = c.name().toLowerCase(Locale.ROOT);
+            inv.setItem(c.slot, item(c.icon, plugin.raw("cat-" + k), categoryLore(c, r), false));
             cats.put(c.slot, c);
         }
         inv.setItem(SLOT_SAVE, item(Material.LIME_CONCRETE, plugin.raw("menu-editor-save"),
-                List.of(plugin.raw("menu-editor-save-lore")), false));
+                wrap(plugin.raw("menu-editor-save-lore")), false));
         inv.setItem(SLOT_TEST, item(Material.BLAZE_POWDER, plugin.raw("menu-editor-test"),
-                List.of(plugin.raw("menu-editor-test-lore")), true));
+                wrap(plugin.raw("menu-editor-test-lore")), true));
         inv.setItem(SLOT_CANCEL, item(Material.RED_CONCRETE, plugin.raw("menu-editor-cancel"),
-                List.of(plugin.raw("menu-editor-cancel-lore")), false));
-        inv.setItem(SLOT_BACK, item(Material.ARROW, plugin.raw("menu-back"), List.of(), false));
+                wrap(plugin.raw("menu-editor-cancel-lore")), false));
+        inv.setItem(SLOT_BACK, backButton());
+    }
+
+    /** Descripción de la categoría + resumen de los valores actuales del ritual. */
+    private List<String> categoryLore(Cat c, Ritual r) {
+        String k = c.name().toLowerCase(Locale.ROOT);
+        List<String> out = new ArrayList<>(wrap(plugin.raw("cat-" + k + "-lore")));
+        if (r != null) {
+            out.add(" ");
+            switch (c) {
+                case INFO -> {
+                    out.add(plugin.raw("sum-name", "name", r.name()));
+                    out.add(plugin.raw("sum-desc", "lines", String.valueOf(r.description().size())));
+                    out.add(plugin.raw("sum-icon", "icon", RitualManager.pretty(r.icon())));
+                }
+                case ALTARS -> {
+                    List<Altar> list = manager.altarsOf(id);
+                    int running = 0;
+                    for (Altar a : list) {
+                        if (a.state == Altar.State.CHARGING || a.state == Altar.State.ACTIVE) running++;
+                    }
+                    out.add(plugin.raw("sum-altars", "count", String.valueOf(list.size())));
+                    out.add(plugin.raw("sum-altars-running", "count", String.valueOf(running)));
+                }
+                case OFFERINGS -> {
+                    out.add(plugin.raw("sum-offer-types", "types", String.valueOf(r.offerings().size()),
+                            "total", String.valueOf(Lore.totalItems(r))));
+                    out.addAll(Lore.offerings(plugin, r, 5));
+                }
+                case BOSS -> {
+                    Ritual.BossSpec b = r.boss();
+                    if (b.mythicId().isEmpty()) {
+                        out.add(plugin.raw("sum-boss-type", "type", RitualManager.pretty(b.type().name())));
+                        out.add(plugin.raw("menu-archive-stats", "health", Lore.num(b.health()), "damage", Lore.num(b.damage())));
+                    } else {
+                        out.add(plugin.raw("sum-boss-mythic", "id", b.mythicId(), "type", RitualManager.pretty(b.type().name())));
+                    }
+                    out.add(plugin.raw("sum-boss-bar", "color", b.barColor().name()));
+                    out.add(plugin.raw("sum-boss-spawn", "x", Lore.num(b.dx()), "y", Lore.num(b.dy()), "z", Lore.num(b.dz())));
+                }
+                case ANIMATIONS -> {
+                    for (Ritual.PhaseId pid : Ritual.PhaseId.values()) {
+                        out.add(plugin.raw("sum-anim-phase", "phase", pid.label,
+                                "count", String.valueOf(r.phases().get(pid).anims().size())));
+                    }
+                }
+                case CINEMATICS -> {
+                    for (Ritual.PhaseId pid : Ritual.PhaseId.values()) {
+                        Ritual.Phase ph = r.phases().get(pid);
+                        out.add(plugin.raw("sum-cine-phase", "phase", pid.label,
+                                "state", plugin.raw(ph.enabled() ? "state-on" : "state-off"),
+                                "time", String.valueOf(ph.duration())));
+                    }
+                }
+                case TIMING -> {
+                    out.add(plugin.raw("sum-timing-total", "time", String.valueOf(r.summonSeconds())));
+                    out.add(plugin.raw("sum-timing-cooldown", "time", RitualManager.formatTime(r.cooldown())));
+                    out.add(plugin.raw("menu-archive-radius", "radius", String.valueOf(r.radius())));
+                }
+                case CONDITIONS -> {
+                    out.add(plugin.raw("sum-cond-time", "value", Lore.time(plugin, r.conditions().time())));
+                    out.add(plugin.raw("sum-cond-players", "count", String.valueOf(r.conditions().minPlayers())));
+                    out.add(plugin.raw("sum-cond-permission", "value", r.conditions().permission().isEmpty()
+                            ? plugin.raw("sum-none") : r.conditions().permission()));
+                    out.add(plugin.raw("menu-archive-visibility", "visibility", Lore.visibility(plugin, r.visibility())));
+                }
+                case REWARDS -> {
+                    out.add(plugin.raw("sum-rew-xp", "xp", String.valueOf(r.rewards().xp())));
+                    out.add(plugin.raw("sum-rew-drops", "count", String.valueOf(r.rewards().drops().size())));
+                    out.add(plugin.raw("sum-rew-vanilla", "state",
+                            plugin.raw(r.rewards().vanillaDrops() ? "state-yes" : "state-no")));
+                    out.add(plugin.raw("sum-rew-commands", "count", String.valueOf(r.rewards().commands().size())));
+                }
+            }
+        }
+        out.add(" ");
+        out.add(plugin.raw("cat-click"));
+        return out;
     }
 
     @Override

@@ -58,24 +58,32 @@ public final class ArchiveMenu extends Menu {
             slots.put(slot, r);
         }
 
-        inv.setItem(4, item(Material.ENCHANTED_BOOK, plugin.raw("menu-archive-header"),
-                List.of(plugin.raw("menu-archive-count", "count", String.valueOf(all.size())),
-                        plugin.raw("menu-archive-page", "page", String.valueOf(page + 1), "pages", String.valueOf(pages))), true));
-        if (page > 0) inv.setItem(SLOT_PREV, item(Material.ARROW, plugin.raw("menu-prev"), List.of(), false));
-        if (page < pages - 1) inv.setItem(SLOT_NEXT, item(Material.ARROW, plugin.raw("menu-next"), List.of(), false));
+        List<String> header = new ArrayList<>();
+        header.add(plugin.raw("menu-archive-count", "count", String.valueOf(all.size())));
+        header.add(plugin.raw("menu-archive-page", "page", String.valueOf(page + 1), "pages", String.valueOf(pages)));
+        header.add(" ");
+        header.addAll(wrap(plugin.raw("menu-archive-header-lore")));
+        inv.setItem(4, item(Material.ENCHANTED_BOOK, plugin.raw("menu-archive-header"), header, true));
+        if (page > 0) {
+            inv.setItem(SLOT_PREV, item(Material.ARROW, plugin.raw("menu-prev"),
+                    List.of(plugin.raw("menu-page-go", "page", String.valueOf(page))), false));
+        }
+        if (page < pages - 1) {
+            inv.setItem(SLOT_NEXT, item(Material.ARROW, plugin.raw("menu-next"),
+                    List.of(plugin.raw("menu-page-go", "page", String.valueOf(page + 2))), false));
+        }
         inv.setItem(SLOT_RELOAD, item(Material.REDSTONE, plugin.raw("menu-archive-reload"),
-                List.of(plugin.raw("menu-archive-reload-lore")), false));
+                wrap(plugin.raw("menu-archive-reload-lore")), false));
         inv.setItem(SLOT_CREATE, item(Material.EMERALD, plugin.raw("menu-archive-create"),
-                List.of(plugin.raw("menu-archive-create-lore")), true));
-        inv.setItem(SLOT_CLOSE, item(Material.BARRIER, plugin.raw("menu-close"), List.of(), false));
+                wrap(plugin.raw("menu-archive-create-lore")), true));
+        inv.setItem(SLOT_CLOSE, item(Material.BARRIER, plugin.raw("menu-close"),
+                wrap(plugin.raw("menu-close-lore")), false));
     }
 
     private ItemStack ritualItem(Ritual r) {
         List<String> lore = new ArrayList<>(r.description());
         if (!lore.isEmpty()) lore.add(" ");
-        lore.add(plugin.raw("menu-archive-altars", "count", String.valueOf(manager.altarsOf(r.id()).size())));
-        lore.add(plugin.raw("menu-archive-boss", "boss", r.bossLabel()));
-        lore.add(plugin.raw("menu-archive-status", "status", manager.statusLabel(r)));
+        lore.addAll(Lore.details(plugin, manager, r));
         lore.add(" ");
         lore.add(plugin.raw("menu-archive-click-edit"));
         lore.add(plugin.raw("menu-archive-click-dup"));
@@ -148,7 +156,12 @@ public final class ArchiveMenu extends Menu {
 
     private void confirmDelete(Player p, Ritual r) {
         String question = plugin.raw("menu-confirm-delete", "ritual", r.name());
-        Bukkit.getScheduler().runTask(plugin, () -> new ConfirmMenu(plugin, question, () -> {
+        List<String> details = new ArrayList<>();
+        details.addAll(wrap(plugin.raw("menu-confirm-delete-lore1", "altars", String.valueOf(manager.altarsOf(r.id()).size()))));
+        details.addAll(wrap(plugin.raw("menu-confirm-delete-lore2")));
+        details.add(" ");
+        details.add(plugin.raw("menu-confirm-delete-lore3"));
+        Bukkit.getScheduler().runTask(plugin, () -> new ConfirmMenu(plugin, question, details, () -> {
             manager.deleteRitual(r.id());
             p.sendMessage(plugin.msg("ritual-deleted", "ritual", r.id()));
             reopen(p);

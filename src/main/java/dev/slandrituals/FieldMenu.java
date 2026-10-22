@@ -57,14 +57,27 @@ public final class FieldMenu extends Menu {
             inv.setItem(slot, fieldItem(f));
             slots.put(slot, f);
         }
-        inv.setItem(SLOT_BACK, item(Material.ARROW, plugin.raw("menu-back"), List.of(), false));
+        inv.setItem(SLOT_BACK, backButton());
     }
 
     private ItemStack fieldItem(Field f) {
         boolean unset = manager.store().get(ritualId, f.path()) == null;
         List<String> lore = new ArrayList<>();
         lore.add(plugin.raw("field-value", "value", display(current(f))) + (unset ? plugin.raw("field-default-tag") : ""));
-        if (!f.hint().isEmpty()) lore.add(SlandRitualsPlugin.color("&8" + f.hint()));
+        if (!unset && f.def() != null) lore.add(plugin.raw("field-default", "value", display(f.def())));
+        lore.add(plugin.raw("field-type-" + f.kind().name().toLowerCase(Locale.ROOT)));
+        if (f.kind() == Field.Kind.INT) {
+            lore.add(plugin.raw("field-range", "min", String.valueOf((int) f.min()), "max", String.valueOf((int) f.max())));
+        } else if (f.kind() == Field.Kind.DOUBLE) {
+            lore.add(plugin.raw("field-range", "min", Lore.num(f.min()), "max", Lore.num(f.max())));
+        } else if (f.kind() == Field.Kind.CHOICE) {
+            lore.addAll(wrap(plugin.raw("field-choices", "choices", String.join(", ", f.choices()))));
+        }
+        if (!f.hint().isEmpty()) {
+            lore.add(" ");
+            lore.add(plugin.raw("field-help"));
+            lore.addAll(wrap(SlandRitualsPlugin.color("&8" + f.hint())));
+        }
         lore.add(" ");
         switch (f.kind()) {
             case BOOL -> lore.add(plugin.raw("field-click-toggle"));
@@ -83,9 +96,12 @@ public final class FieldMenu extends Menu {
     private String display(Object v) {
         if (v == null) return "§8(sin definir)";
         if (v instanceof Boolean b) return b ? "§a✔ activado" : "§c✘ desactivado";
-        if (v instanceof List<?> l) return l.isEmpty() ? "§8(vacío)" : String.join(" | ", l.stream().map(String::valueOf).toList());
+        if (v instanceof Number n) return Lore.num(n.doubleValue());
+        if (v instanceof List<?> l) {
+            return l.isEmpty() ? "§8(vacío)" : shorten(String.join(" | ", l.stream().map(String::valueOf).toList()), 60);
+        }
         String s = String.valueOf(v);
-        return s.isEmpty() ? "§8(vacío)" : s;
+        return s.isEmpty() ? "§8(vacío)" : shorten(s, 60);
     }
 
     @Override

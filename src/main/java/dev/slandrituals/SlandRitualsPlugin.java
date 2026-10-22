@@ -17,6 +17,7 @@ public final class SlandRitualsPlugin extends JavaPlugin {
     private Cfg animations;
     private Hooks hooks;
     private ChatInput chat;
+    private final Set<String> missingKeys = new HashSet<>();
 
     @Override
     public void onEnable() {
@@ -71,13 +72,15 @@ public final class SlandRitualsPlugin extends JavaPlugin {
     }
 
     /** Mensaje con prefijo. Pares clave/valor para reemplazar {placeholders}. */
-    public String msg(String key, String... pairs) {
-        return prefix() + raw(key, pairs);
-    }
-
-    /** Mensaje sin prefijo. */
     public String raw(String key, String... pairs) {
-        String text = messages.str(key, key);
+        String text = messages.str(key, null);
+        if (text == null) {
+            // Nunca se muestra el nombre de la clave a los jugadores: se avisa una vez en la consola.
+            if (missingKeys.add(key)) {
+                getLogger().warning("Falta la clave '" + key + "' en messages.yml. Revisa que el archivo esté completo y sin errores de YAML.");
+            }
+            return "";
+        }
         for (int i = 0; i + 1 < pairs.length; i += 2) {
             text = text.replace("{" + pairs[i] + "}", pairs[i + 1]);
         }

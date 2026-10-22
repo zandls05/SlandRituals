@@ -99,12 +99,17 @@ public abstract class Menu implements InventoryHolder {
         ItemStack it = new ItemStack(m);
         ItemMeta meta = it.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(name);
-            meta.setLore(lore);
+            meta.setDisplayName(name == null || name.isEmpty() ? " " : name);
+            List<String> clean = new ArrayList<>(); // se descartan las líneas vacías (claves que faltan)
+            if (lore != null) {
+                for (String line : lore) {
+                    if (line != null && !line.isEmpty()) clean.add(line);
+                }
+            }
+            meta.setLore(clean);
             meta.addItemFlags(ItemFlag.values());
             if (glow) meta.setEnchantmentGlintOverride(true);
             it.setItemMeta(meta);
         }
         return it;
     }
-}

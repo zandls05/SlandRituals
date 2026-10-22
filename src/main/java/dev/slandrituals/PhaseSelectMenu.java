@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +35,44 @@ public final class PhaseSelectMenu extends Menu {
         for (int i = 0; i < 27; i++) inv.setItem(i, filler);
         int[] positions = {10, 12, 14, 16};
         Ritual.PhaseId[] ids = Ritual.PhaseId.values();
+        Ritual r = manager.getRitual(ritualId);
         for (int i = 0; i < ids.length; i++) {
             inv.setItem(positions[i], item(ids[i].icon, SlandRitualsPlugin.color("&d" + ids[i].label),
-                    List.of(plugin.raw("menu-phases-click")), false));
+                    phaseLore(r, ids[i]), false));
             slots.put(positions[i], ids[i]);
         }
-        inv.setItem(SLOT_BACK, item(Material.ARROW, plugin.raw("menu-back"), List.of(), false));
+        inv.setItem(SLOT_BACK, backButton());
+    }
+
+    /** Qué hace la fase y cómo está configurada ahora mismo. */
+    private List<String> phaseLore(Ritual r, Ritual.PhaseId pid) {
+        List<String> lore = new ArrayList<>(wrap(plugin.raw("phase-desc-" + pid.key)));
+        lore.add(" ");
+        if (r != null) {
+            Ritual.Phase ph = r.phases().get(pid);
+            lore.add(plugin.raw("menu-phase-state", "state", plugin.raw(ph.enabled() ? "state-on" : "state-off")));
+            lore.add(plugin.raw("menu-phase-duration", "time", String.valueOf(ph.duration())));
+            if (animations) {
+                lore.add(plugin.raw("menu-phase-anims", "count", String.valueOf(ph.anims().size()),
+                        "total", String.valueOf(AnimType.values().length)));
+                for (Ritual.AnimSpec spec : ph.anims()) {
+                    lore.add(plugin.raw("menu-phase-anim-line", "name", spec.type().label));
+                }
+            } else {
+                lore.add(ph.sound().isEmpty() ? plugin.raw("menu-phase-sound-none")
+                        : plugin.raw("menu-phase-sound", "sound", shorten(ph.sound(), 40)));
+                lore.add(plugin.raw("menu-phase-title", "value", orNone(ph.title())));
+                lore.add(plugin.raw("menu-phase-subtitle", "value", orNone(ph.subtitle())));
+                lore.add(plugin.raw("menu-phase-message", "value", orNone(ph.message())));
+            }
+            lore.add(" ");
+        }
+        lore.add(plugin.raw("menu-phases-click"));
+        return lore;
+    }
+
+    private String orNone(String text) {
+        return text == null || text.isEmpty() ? plugin.raw("menu-phase-none") : shorten(text, 40);
     }
 
     @Override
